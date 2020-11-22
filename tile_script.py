@@ -3,10 +3,12 @@ import imutils
 from imutils.video import VideoStream
 import numpy as np
 import time
+from connection import Connection
 
 initBox = None
 
 vs = cv2.VideoCapture("test_vid.MP4")
+conn = Connection('/dev/ttyACM0', 9600)
 
 paused= False
 frame = None
@@ -14,7 +16,7 @@ while True:
     if not paused:
         frame = vs.read()
         frame = frame[1]
-
+        actual = frame
         if frame is None:
             break
 
@@ -30,21 +32,11 @@ while True:
         for x in range(W//8, W, W//4):
             i += 1
             if (frame[-100][x] == 0):
-                print ("TAP: " + str(i))
-        # for idx, contour in enumerate(contours):
-            # points = [contour[0]]
-            # for i in range(1,len(contour)-1):
-            #     # if abs(contour[i][0][0] - contour[i+1][0][0]) > 7 or abs(contour[i][0][1] - contour[i+1][0][1]):
-            #     #     points.append(contour[i])
-            #     # a high value indicates the contour contains mostly white, so draw the contour (I used the boundingRect)
-            #     # if mean_val[0] < 100:
-            # if 3 <= len(contour) <= 4:
-            #     print (tuple(contour[0][0]), tuple(contour[2][0]))
-            #     cv2.rectangle(frame, tuple(contour[0][0]), tuple(contour[2][0]), (100,100,100), 10)
-        # print ("________")
-            # print (points)
+                conn.sendTap(i)
+
     # cv2.imshow("Frame", frame[H//3:, :])
     cv2.imshow("Frame", frame)
+    # cv2.imshow("Actual", actual)
     
 
     key = cv2.waitKey(1) & 0xFF
