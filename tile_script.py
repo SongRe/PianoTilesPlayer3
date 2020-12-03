@@ -1,3 +1,5 @@
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 import cv2
 import imutils
 # from imutils.video import VideoStream
@@ -26,9 +28,6 @@ class Connection():
         # line = self.serial.readline().decode('utf-8').rstrip()
         return ""
 
-from picamera.array import PiRGBArray
-from picamera import PiCamera
-
 # vs = cv2.VideoCapture("test_vid.MP4")
 camera = PiCamera()
 shape = (400, 500)
@@ -39,56 +38,44 @@ raw = PiRGBArray(camera, size=shape)
 
 conn = Connection('/dev/ttyACM0', 115200)
 
-paused= False
-frame = None
-start = time.time()
+paused= True
 current_time = lambda: int(round(time.time() * 1000))
 cooldowns = [0,0,0,0]
 last_time = current_time()
 for frame in camera.capture_continuous(raw, format="bgr",use_video_port=True):
-    if not paused:
-        if frame is None:
-            break
-        actual = frame.array 
-        frame = frame.array
-        frame = imutils.resize(frame, width=500)
-        (H, W) = frame.shape[:2]
-        frame = frame[H//10:4*H//5 - H//5, :]
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # frame = cv2.GaussianBlur(frame, (9,9), 0)
-        (thresh, frame) = cv2.threshold(frame, 50, 255, cv2.THRESH_BINARY)
-        # print (frame, frame.shape)
-        # contours, hierarchy = cv2.findContours(frame.astype('uint8'), cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        i = 0
-        taps = [0,0,0,0]
-        elapsed_time = current_time() - last_time
-        last_time = current_time()
-        didTap = False
-        for x in range(W//8, W, W//4):
-            cooldowns[i] = max(0, cooldowns[i] - elapsed_time)
-            if (cooldowns[i] == 0):
-                # isTap = True
-                # for y in range(35):
-                #     if (frame[-100 + y][x] != 0):
-                #         isTap = False
-                #         break
-                if (frame[-100][x] != 0):
-                    taps[i] = 1
-                    cooldowns[i] = 85
-                    didTap = True
-            i += 1
-        if didTap:
-            conn.sendTaps(taps)
-        # breakFlag = False
-        # for x in range(len(taps)):
-        #     if taps[x]:
-        #         breakFlag = True
-        # if breakFlag:
-        #     break
-    # cv2.imshow("Frame", frame[H//3:, :])
+    frame = frame.array
+    actual = frame
+    frame = imutils.resize(frame, width=500)
+    (H, W) = frame.shape[:2]
+    #frame = frame[H//10:4*H//5 - H//5, :]
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # frame = cv2.GaussianBlur(frame, (9,9), 0)
+    (thresh, frame) = cv2.threshold(frame, 50, 255, cv2.THRESH_BINARY)
+    # print (frame, frame.shape)
+    i = 0
+    taps = [0,0,0,0]
+    elapsed_time = current_time() - last_time
+    last_time = current_time()
+    didTap = False
+    for x in range(W//8, W, W//4):
+        cooldowns[i] = max(0, cooldowns[i] - elapsed_time)
+        if (cooldowns[i] == 0):
+            # isTap = True
+            # for y in range(35):
+            #     if (frame[-100 + y][x] != 0):
+            #         isTap = False
+            #         break
+            if (frame[-100][x] == 0):
+                taps[i] = 1
+                cooldowns[i] = 200
+                didTap = True
+        i += 1
+    if didTap and not paused:
+        conn.sendTaps(taps)
     cv2.imshow("Frame", frame)
     # cv2.imshow("Actual", actual)
     
+
     key = cv2.waitKey(1) & 0xFF
 
     if key == ord("q"):
