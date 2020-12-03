@@ -26,8 +26,9 @@ class Connection():
         # line = self.serial.readline().decode('utf-8').rstrip()
         return ""
 
+import picamera
 from picamera.array import PiRGBArray
-from picamera import PiCamera
+
 
 # vs = cv2.VideoCapture("test_vid.MP4")
 camera = PiCamera()
@@ -37,7 +38,7 @@ camera.resolution = shape
 camera.framerate = FRAME_RATE
 raw = PiRGBArray(camera, size=shape)
 
-conn = Connection('/dev/ttyACM0', 115200)
+conn = Connection('/dev/tty.usbmodem14101', 115200)
 
 paused= False
 frame = None
@@ -56,7 +57,7 @@ for frame in camera.capture_continuous(raw, format="bgr",use_video_port=True):
         frame = frame[H//10:4*H//5 - H//5, :]
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # frame = cv2.GaussianBlur(frame, (9,9), 0)
-        (thresh, frame) = cv2.threshold(frame, 50, 255, cv2.THRESH_BINARY)
+        (thresh, frame) = cv2.threshold(frame, 100, 255, cv2.THRESH_BINARY)
         # print (frame, frame.shape)
         # contours, hierarchy = cv2.findContours(frame.astype('uint8'), cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         i = 0
@@ -77,8 +78,8 @@ for frame in camera.capture_continuous(raw, format="bgr",use_video_port=True):
                     cooldowns[i] = 85
                     didTap = True
             i += 1
-        if didTap:
-            conn.sendTaps(taps)
+        # if didTap:
+        conn.sendTaps(taps)
         # breakFlag = False
         # for x in range(len(taps)):
         #     if taps[x]:
@@ -89,13 +90,13 @@ for frame in camera.capture_continuous(raw, format="bgr",use_video_port=True):
     cv2.imshow("Frame", frame)
     # cv2.imshow("Actual", actual)
     
+
     key = cv2.waitKey(1) & 0xFF
 
     if key == ord("q"):
         break 
     elif key == ord("p"):
         paused = not paused
-    raw.truncate(0)
     
-# vs.release()
+vs.release()
 cv2.destroyAllWindows()
