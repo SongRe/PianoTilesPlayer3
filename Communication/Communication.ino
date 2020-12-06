@@ -5,8 +5,9 @@ int MOTOR_PIN_2 = 11;
 int MOTOR_PIN_3 = 10;
 int MOTOR_PIN_4 = 9;
 
-int up = 80;
+int up = 85;
 int down = 100;
+int time_delay = 65;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -29,27 +30,27 @@ void loop() {
     //Receive tap downs
      if (data[0] == '1' ) {
       motor1.write(down);
-      delay(75);
+      delay(time_delay);
       motor1.write(up);
-      Serial.println("1");
+//      Serial.println("1");
     }
     if (data[1] == '1') {
       motor2.write(down);
-      delay(75);
+      delay(time_delay);
       motor2.write(up);
-      Serial.println("2");
+//      Serial.println("2");
     }
     if (data[2] == '1') {
       motor3.write(down);
-      delay(75);
+      delay(time_delay);
       motor3.write(up);
-      Serial.println("3");
+//      Serial.println("3");
     }
     if (data[3] == '1') {
       motor4.write(down);
-      delay(75);
+      delay(time_delay);
       motor4.write(up);
-      Serial.println("4");
+//      Serial.println("4");
     }
     //Receive tap ups
 //    else if (data == "10") {
